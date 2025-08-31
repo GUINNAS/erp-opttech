@@ -1,10 +1,19 @@
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
+
+const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   const { email, password } = await request.json();
 
-  // Exemplo: validação simples (substitua por consulta ao banco depois)
-  if (email === "admin@opttech.com" && password === "123456") {
+  // Busca o usuário pelo email
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  // Verifica se usuário existe e compara o hash da senha
+  if (user && await bcrypt.compare(password, user.password)) {
     return NextResponse.json({ success: true, message: "Login realizado com sucesso." });
   }
 
